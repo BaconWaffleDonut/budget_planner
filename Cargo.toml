@@ -4,4 +4,4 @@ version = "0.0.1"
 edition = "2024"
 
 [dependencies]
-inquire = "0.7.5"
+rand = "0.9.1"

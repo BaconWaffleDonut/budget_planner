@@ -1,11 +1,12 @@
-use inquire::{InquireError, Select};
+use rand;
+
+fn greeter() {
+    let welcome_messages = ["Welcome to my totally awesome let's play. Today we'll be commiting tax fraud", ":3", "Im in your walls", "IDK, expecting something else?", "Coded by a bored teenager", "Blåhaj my beloved", "Head empty"];
+    let rand_greet: usize = rand::random_range(0..=6);
+    println!("{}", welcome_messages[rand_greet]);
+    // Will eventually import a list of greating messages that will be printed upon startup, eventually I want to include a weighting to them so that some are more common while others are rarer. But hey it works now.
+}
 
 fn main() {
-    println!("Welcome to my totally awesome let's play! On todays episode we will be committing tax fraud! /j");
-
-    let v1i: Vec<&str>  = vec!["Add", "Withdraw", "Check"];
-    let v1o: Result<&str, InquireError> = Select::new("Please select what you want to do!", v1i).prompt();
-    //find some way to remove inquireerror from v1o PLEASE FUTURE ME, in like two minutes that is....... mjaybe i just find other way to handle input 
-
-    //println!("test: {choice}");
+    greeter();
 }   
