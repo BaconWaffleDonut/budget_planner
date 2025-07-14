@@ -38,11 +38,61 @@ fn main() {
     }
 
     fn deposit_screen(x: bool) {
+    /*
+    Example:
+        |Deposit|
+
+    |Savings|   |Checkings|     |Auto|
+    add directly to savings or checkings account
+    or automatically distro based on set goals, ie 75% to savings, 20% to checkings, 5% to fun or something,
+    this is definitely going to be a lot more complicated because i need to add a way to create custome goals based off of the total amount of liquidity
+
+    Pretty much I want to be able to load this up and the dashboard should show how close to goals I am instead of expense/income;
+    It should show like:
+    Savings--------------------------
+    ${Running Total} / ({Goal})
+        Goal 1: {Amount}    {Possible complete by date}     {followed by how much dedicated per month required to meet/current alloted} 
+        Goal 2: {Amount}
+        ...
+
+        Total Needed: {Sum of All Goals}
+    Expenses-----------------
+    $(Running Total) / ({Budgeted Amount})                                    Like lets say that you expect/want to spend only $5K this month 
+        Goal 1: {Amount Spent}/{Amount Alloted}    {Yearly/Monthly}                                  Lets say you want to cut back on how much you spend on fast food, this will show you how much you want to spend at most along with how much you have spent so far in selected time frame
+    
+    Debts:
+        Debt 1: {Amount} {Pay back by: Y/M/D}                   Might have this be a part, track how much you owe, ie credit card purchases that havent been payed off yet or loans from a friend
+
+    Are you on track to hitting your goals: {1-10 system based on fractions of above, ie running<budgeted=good, give motivation if good and advice if bad, idk}
+
+    all of the above fields should be selectable, as a row, so that you can open a new tab/window/thing that allows you to see more information such as monthly payemnts towards goal or current percent allocated, etc, along with a more detailed descirption fo what it is for or what you bought/spent money on, or who you owe money to and why
+     */
     if x == true {
         println!("D");
         }
     }
     fn withdrawal_screen(x: bool) {
+        /*
+        should have at least two options,
+        paid which will subtract from liquidity
+        and unpaid which will add to debt
+
+        for example:
+            Withdrawal
+
+            |USER INPUT| needs to validate input as f64, return error on non-f64/more than 2 decimals
+
+            |PAID|  |UNPAID| bool t\f
+
+            |CONFIRM|  |CANCEL| for confirm requires both input and P\UP to be valid, 
+            for example, (230.94 PAID) this could be logged in sql in the format of DATE | AMOUNT | STATUS
+            that way you can see when you purchased something and for what amount
+            i might be able to learn more sql and do something on the db side to then check if the status is paid to then subtract that amount from an account
+            speaking of i need to add a system for multiple accounts, ie credit/debit/cash
+
+            I can create a trigger when inserting into the withdrawal table to then perf a math op in balance table based on bool state
+
+        */
         if x == true {
             println!("W");
         }
@@ -52,7 +102,8 @@ fn main() {
         if x == true {
             println!("-----DASHBOARD-----");
             let connection = sqlite::open("./testing.sqlite3").unwrap();
-            let query = "SELECT * FROM withdrawals ORDER BY day DESC LIMIT 15";
+            
+            let query = "SELECT * FROM withdrawals ORDER BY date DESC LIMIT 15";
             println!("Recent Expeneses:");
             for row in connection
                 .prepare(query)
@@ -60,9 +111,20 @@ fn main() {
                 .into_iter()
                 .map(|row: Result<sqlite::Row, sqlite::Error>| row.unwrap())
                 {
-                    println!("Date: {}: ${}", row.read::<&str, _>("day"), row.read::<i64, _>("amount"));
+                    println!("  ╠ Date: {}: ${}", row.read::<&str, _>("date"), row.read::<f64, _>("amount"));
                 }
-                //find someway to limit to 15 most recent expenses
+            
+            let query = "SELECT * FROM deposits ORDER BY date DESC LIMIT 15";
+            println!("Recent deposists:");
+            for row in connection
+                .prepare(query)
+                .unwrap()
+                .into_iter()
+                .map(|row: Result<sqlite::Row, sqlite::Error>| row.unwrap())
+                {
+                    println!("  ╠ Date: {}: ${}", row.read::<&str, _>("date"), row.read::<f64, _>("amount"));
+                }
+            
         }
     }
 }   
