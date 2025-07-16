@@ -1,7 +1,7 @@
 use rand;
 use inquire::{error::InquireError, Select};
-use sqlite;
-
+use rusqlite::{Connection};
+use std::{io};
 
 fn greeter() {
     let welcome_messages = ["Welcome to my totally awesome let's play. Today we'll be commiting tax fraud", ":3", "Im in your walls", "IDK, expecting something else?", "Coded by a bored teenager", "Blåhaj my beloved", "Head empty"];
@@ -10,7 +10,10 @@ fn greeter() {
     // Will eventually import a list of greating messages that will be printed upon startup, eventually I want to include a weighting to them so that some are more common while others are rarer. But hey it works now.
 }
 
-
+struct Test {
+    amount: f32,
+    date: Option<Vec<u8>>
+}
 
 fn main() {
     greeter();
@@ -34,7 +37,7 @@ fn main() {
     } else if choice == "Dashboard" {
         dashboard_screen(true);
     } else {
-        panic!("Unexpected error, no input retrieved)")
+        panic!("Unexpected error, no input retrieved")
     }
 
     fn deposit_screen(x: bool) {
@@ -68,7 +71,51 @@ fn main() {
     all of the above fields should be selectable, as a row, so that you can open a new tab/window/thing that allows you to see more information such as monthly payemnts towards goal or current percent allocated, etc, along with a more detailed descirption fo what it is for or what you bought/spent money on, or who you owe money to and why
      */
     if x == true {
-        println!("D");
+        let deposit_options: Vec<&str> = vec!["Savings", "Checking", "Auto"];
+        let page: Result<&str, InquireError> = Select::new("Select an option!", deposit_options).prompt();
+        let choice: &str = page.expect("Failed to select option");
+        println!("{choice}");
+
+        if choice == "Savings" {
+             let conn = Connection::open("./testing.sqlite3").unwrap();
+            loop {
+
+            println!("Enter amount to add");
+            let mut amount = String::new();
+            io::stdin()
+                .read_line(&mut amount)
+                .expect("Failed to read line");
+            let amount: f32 = match amount.trim().parse() {
+                Ok(num) => num,
+                Err(_) => panic!("Unexpected error during processing")               
+            };
+            println!("{amount}");
+            
+            let test = Test {
+                amount: amount,
+                date: None,
+            };
+            let confirm_prompt: Result<&str, InquireError> = Select::new("Is this the right amount", vec!["Yes", "No"]).prompt();
+            let confirm_state: &str = confirm_prompt.expect("Failed to confirm.");
+            if confirm_state == "Yes" {
+                println!("Confirmed");
+                conn.execute("
+                    INSERT INTO savings(amount, date) VALUES(?1, ?2)",
+                    (&test.amount, &test.date),
+                );
+                break
+            } else if confirm_state == "No" {
+                println!("Denied");
+                continue
+            }
+        }
+        } else if choice == "Checking" {
+            println!("Checking")
+        } else if choice == "Auto" {
+            println!("Auto")
+        } else {
+            panic!("Unexpected error, no input retrieved.")
+        }
         }
     }
     fn withdrawal_screen(x: bool) {
@@ -101,30 +148,6 @@ fn main() {
     fn dashboard_screen(x: bool) {
         if x == true {
             println!("-----DASHBOARD-----");
-            let connection = sqlite::open("./testing.sqlite3").unwrap();
-            
-            let query = "SELECT * FROM withdrawals ORDER BY date DESC LIMIT 15";
-            println!("Recent Expeneses:");
-            for row in connection
-                .prepare(query)
-                .unwrap()
-                .into_iter()
-                .map(|row: Result<sqlite::Row, sqlite::Error>| row.unwrap())
-                {
-                    println!("  ╠ Date: {}: ${}", row.read::<&str, _>("date"), row.read::<f64, _>("amount"));
-                }
-            
-            let query = "SELECT * FROM deposits ORDER BY date DESC LIMIT 15";
-            println!("Recent deposists:");
-            for row in connection
-                .prepare(query)
-                .unwrap()
-                .into_iter()
-                .map(|row: Result<sqlite::Row, sqlite::Error>| row.unwrap())
-                {
-                    println!("  ╠ Date: {}: ${}", row.read::<&str, _>("date"), row.read::<f64, _>("amount"));
-                }
-            
         }
     }
 }   

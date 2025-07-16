@@ -6,4 +6,5 @@ edition = "2024"
 [dependencies]
 rand = "0.9.1"
 inquire = "0.7.5"
-sqlite = "0.37.0"
+rusqlite = { version = "0.37.0", features = ["bundled"] }
+chrono = "0.4.41"
