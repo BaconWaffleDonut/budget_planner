@@ -71,15 +71,14 @@ fn main() {
     all of the above fields should be selectable, as a row, so that you can open a new tab/window/thing that allows you to see more information such as monthly payemnts towards goal or current percent allocated, etc, along with a more detailed descirption fo what it is for or what you bought/spent money on, or who you owe money to and why
      */
     if x == true {
+        let conn = Connection::open("./testing.sqlite3").unwrap();
         let deposit_options: Vec<&str> = vec!["Savings", "Checking", "Auto"];
         let page: Result<&str, InquireError> = Select::new("Select an option!", deposit_options).prompt();
         let choice: &str = page.expect("Failed to select option");
         println!("{choice}");
-
+        
         if choice == "Savings" {
-            let conn = Connection::open("./testing.sqlite3").unwrap();
             loop {
-
             println!("Enter amount to add");
             let mut amount = String::new();
             io::stdin()
@@ -109,9 +108,37 @@ fn main() {
             }
         }
         } else if choice == "Checking" {
-            println!("Checking")
+            loop {
+            println!("Enter amount to add");
+            let mut amount = String::new();
+            io::stdin()
+                .read_line(&mut amount)
+                .expect("Failed to read line");
+            let amount: f32 = match amount.trim().parse() {
+                Ok(num) => num,
+                Err(_) => panic!("Unexpected error during processing")               
+            };
+            
+            let test = Savings {
+                amount: amount,
+                date: None,
+            };
+            let confirm_prompt: Result<&str, InquireError> = Select::new("Is this the right amount", vec!["Yes", "No"]).prompt();
+            let confirm_state: &str = confirm_prompt.expect("Failed to confirm.");
+            if confirm_state == "Yes" {
+                println!("Confirmed");
+                let _ = conn.execute("
+                    INSERT INTO checking(amount, date) VALUES(?1, ?2)",
+                    (&test.amount, &test.date),
+                );
+                break
+            } else if confirm_state == "No" {
+                println!("Denied");
+                continue
+            }
+        }
         } else if choice == "Auto" {
-            println!("Auto")
+            println!("This is a problem for tommorow me...")
         } else {
             panic!("Unexpected error, no input retrieved.")
         }
