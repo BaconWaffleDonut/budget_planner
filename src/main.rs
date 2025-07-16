@@ -1,6 +1,6 @@
 use rand;
 use inquire::{error::InquireError, Select};
-use rusqlite::{Connection};
+use rusqlite::{Connection, Result};
 use std::{io};
 
 fn greeter() {
@@ -10,7 +10,7 @@ fn greeter() {
     // Will eventually import a list of greating messages that will be printed upon startup, eventually I want to include a weighting to them so that some are more common while others are rarer. But hey it works now.
 }
 
-struct Test {
+struct Savings {
     amount: f32,
     date: Option<Vec<u8>>
 }
@@ -77,7 +77,7 @@ fn main() {
         println!("{choice}");
 
         if choice == "Savings" {
-             let conn = Connection::open("./testing.sqlite3").unwrap();
+            let conn = Connection::open("./testing.sqlite3").unwrap();
             loop {
 
             println!("Enter amount to add");
@@ -89,9 +89,8 @@ fn main() {
                 Ok(num) => num,
                 Err(_) => panic!("Unexpected error during processing")               
             };
-            println!("{amount}");
             
-            let test = Test {
+            let test = Savings {
                 amount: amount,
                 date: None,
             };
@@ -99,7 +98,7 @@ fn main() {
             let confirm_state: &str = confirm_prompt.expect("Failed to confirm.");
             if confirm_state == "Yes" {
                 println!("Confirmed");
-                conn.execute("
+                let _ = conn.execute("
                     INSERT INTO savings(amount, date) VALUES(?1, ?2)",
                     (&test.amount, &test.date),
                 );
